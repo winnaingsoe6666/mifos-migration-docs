@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mifos Data Migration Guide</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <title>Mifos Data Migration & ETL Plan - Complete Guide</title>
     <style>
         * {
             margin: 0;
@@ -17,10 +16,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            line-height: 1.6;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -31,13 +31,13 @@
         header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 40px;
+            padding: 50px 40px;
             text-align: center;
         }
         
         header h1 {
             font-size: 2.5rem;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
         
@@ -47,216 +47,1419 @@
         }
         
         .content {
-            padding: 40px;
+            padding: 50px;
         }
         
-        .card {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
+        h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.5rem;
+            margin: 30px 0 15px 0;
+        }
+        
+        h4 {
+            color: #333;
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .alert {
             padding: 20px;
-            margin: 20px 0;
+            margin: 25px 0;
+            border-left: 5px solid;
+            border-radius: 5px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .phase-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 25px 0;
             border-radius: 8px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        .card:hover {
+        .phase-card:hover {
             transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
-        .card h3 {
+        .phase-card h3 {
             color: #667eea;
-            margin-bottom: 10px;
+            margin-top: 0;
         }
         
-        .download-section {
-            text-align: center;
-            padding: 40px;
+        code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #c7254e;
+        }
+        
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table tr:hover {
             background: #f8f9fa;
         }
         
-        .download-btn {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        
-        .features {
+        .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin: 30px 0;
         }
         
-        .feature {
+        .tool-card {
             background: white;
             padding: 25px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.2s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #667eea;
         }
         
-        .feature:hover {
-            transform: translateY(-5px);
+        .tool-card h4 {
+            color: #667eea;
+            margin-top: 0;
         }
         
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
         }
         
-        .feature h4 {
-            color: #333;
-            margin-bottom: 10px;
+        .summary-box h3 {
+            color: white;
+            margin-top: 0;
+        }
+        
+        .summary-box ul {
+            list-style-type: none;
+            margin-left: 0;
+        }
+        
+        .summary-box li::before {
+            content: "✓ ";
+            font-weight: bold;
+            margin-right: 8px;
         }
         
         footer {
             background: #2d3748;
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
         }
         
-        .warning {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
+        .toc {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
         }
         
-        .success {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
+        .toc h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        
+        .toc li {
+            margin: 10px 0;
+        }
+        
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .command-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .command-block::before {
+            content: "$ ";
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        
+        strong {
+            color: #667eea;
+        }
+        
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🚀 Mifos Data Migration Guide</h1>
-            <p>Complete ETL Plan for MySQL Database Migration (Myanmar)</p>
+            <h1>🚀 Mifos Data Migration & ETL Plan</h1>
+            <p>Complete Guide for MySQL Database Migration (Myanmar)</p>
+            <p style="margin-top: 10px; font-size: 1rem;">Version 2.0 | Last Updated: October 21, 2025</p>
         </header>
         
         <div class="content">
-            <div class="success">
-                <strong>✅ အောင်မြင်စွာ Migration လုပ်ရန်:</strong> ဒီ guide ကို step by step လိုက်ပါ၊ validation တိုင်းကို သေချာ လုပ်ပါ။
+            <div class="alert alert-success">
+                <strong>✅ အောင်မြင်စွာ Migration လုပ်ရန်:</strong> ဒီ guide ကို step by step လိုက်ပါ၊ validation ထိုင်းကို မြှေးထား လုပ်ပါ။
             </div>
-            
-            <h2>📋 ဒီ Guide မှာ ပါဝင်တာတွေ</h2>
-            
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">📊</div>
-                    <h4>6 Phases</h4>
-                    <p>Complete migration workflow from planning to go-live</p>
-                </div>
-                
-                <div class="feature">
-                    <div class="feature-icon">🔧</div>
-                    <h4>ETL Scripts</h4>
-                    <p>Python & SQL scripts for data transformation</p>
-                </div>
-                
-                <div class="feature">
-                    <div class="feature-icon">✅</div>
-                    <h4>Validation</h4>
-                    <p>Complete testing & validation procedures</p>
-                </div>
-                
-                <div class="feature">
-                    <div class="feature-icon">🐛</div>
-                    <h4>Troubleshooting</h4>
-                    <p>Common issues and solutions</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>🎯 Phase 1: ကြိုတင်ပြင်ဆင်ခြင်း</h3>
-                <p>Schema analysis, file splitting, character encoding fixes</p>
+
+            <div class="toc">
+                <h3>📋 အကြောင်းအရာများ (Table of Contents)</h3>
                 <ul>
-                    <li>4GB SQL file ကို DDL နှင့် DML ခွဲထုတ်ခြင်း</li>
-                    <li>utf8 မှ utf8mb4 ပြောင်းလဲခြင်း</li>
-                    <li>DBeaver နှင့် schema comparison</li>
+                    <li><a href="#analysis">တွေ့ရှိချက် (Analysis) နှင့် အဓိက စိန်ခေါ်မှုများ</a></li>
+                    <li><a href="#phase1">Phase 1: အကြိုတင် ပြင်ဆင်ခြင်းနှင့် ပိုင်းခြားခြင်း</a></li>
+                    <li><a href="#phase2">Phase 2: ETL ပတ်ဝန်းကျင် ပြင်ဆင်ခြင်း</a></li>
+                    <li><a href="#phase3">Phase 3: Data ထည့်သွင်းခြင်းနှင့် ပြောင်းလဲခြင်း (ETL)</a></li>
+                    <li><a href="#phase4">Phase 4: စမ်းသပ်ခြင်းနှင့် အတည်ပြုခြင်း</a></li>
+                    <li><a href="#phase5">Phase 5: Production Go-Live</a></li>
+                    <li><a href="#phase6">Phase 6: Post-Migration</a></li>
+                    <li><a href="#utf8">UTF-8 vs UTF-8MB4 အထူးသတိပြုချက်</a></li>
+                    <li><a href="#python-script">Python Script for Splitting SQL File</a></li>
+                    <li><a href="#schema-comparison">Schema Comparison Tools & Methods</a></li>
+                    <li><a href="#excel-analysis">Excel Analysis & Data Mapping</a></li>
+                    <li><a href="#warnings">အကျဉ်းချုပ် သတိပြုချက်များ</a></li>
                 </ul>
             </div>
+
+            <section id="analysis">
+                <h2>🔍 တွေ့ရှိချက် (Analysis) နှင့် အဓိက စိန်ခေါ်မှုမျာ း</h2>
+                
+                <p>သင်၏ plan ကို မဆွဲခင်၊ လက်ရှိအခြေအနေမှာ ကြိုတင်တွေ့မည့် အဓိက စိန်ခေါ်မှု (Key Challenges) ၃ ခုကို အသိသဘောလည်ထားဖို့လို ပါသည်။</p>
+
+                <div class="phase-card">
+                    <h3>1️⃣ Schema (Database Structure) က ခြားနားမှု</h3>
+                    <ul>
+                        <li>Client သုံးနေသည့် Mifos အဟောင်းနှင့် သင်ရေးနေသည့် Mifos အသစ် မှာ version တူဖို့ မသေချာပါဘူး။</li>
+                        <li>Version မတူပါက Database schema (table name, column name, data type) တွေ ကွဲပြားနိုင် ပါသည်။</li>
+                        <li>သင်က client ရဲ့ project အဟောင်းကို ကြည့်ခွင့်မရှိသည့်အတွက်၊ ဒီ schema ကွဲပြားမှုကို SQL file ပေါ် မှာ မူတည်ပြီး ေးဖြေရမည့်း ပါမည်။</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>2️⃣ SQL File Size (4 GB)</h3>
+                    <ul>
+                        <li>4GB ရှိသည့် .sql text file တစ်ခုကို mysql command line ကနေ တိုက်ရိုက် import လုပ်သော ကာ အလွန်အချိန်ကြာ ပါမည်။</li>
+                        <li>Lightsail instance ရဲ့ resource (RAM, CPU) အပေါ် မူတည်ပြီး import process က အချိန်အကြာကြီး (နာရီ ပေါင်းများစွာ) ကြာနိုင်သလို၊ resource မလောက်လို့ fail လည်း ဖြစ်သွားနိုင် ပါသည်။</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>3️⃣ DDL + Data ပေါင်းထားခြင်း</h3>
+                    <ul>
+                        <li>SQL file ထဲ မှာ DDL (Data Definition Language - CREATE TABLE...) နှင့် Data (DML - INSERT INTO...) ပေါင်းထားသောက အကြီးမားဆုံး ပြဿနာ ပါ။</li>
+                        <li>ဘာလို့လဲဆိုတော့ သင့် project အသစ်မှာ ကိုယ်ပိုင် schema အသစ် (Mifos က generate လုပ်ထားသည့်) ရှိပြီးသားး။</li>
+                        <li>အဲ့ဒီအပေါ် ကို DDL အဟောင်းနဲ့ သွားလုပ် run လို့မရပါဘူး။ Table တွေ conflict ဖြစ်ပြီး error တက် ပါမည်။</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="phase1">
+                <h2>🎯 Phase 1: အကြိုတင် ပြင်ဆင်ခြင်းနှင့် ပိုင်းခြားခြင်း (Preparation & Analysis)</h2>
+                
+                <p>ဤအဆင့်သည် အရေးကြီးဆုံးဖြစ်ပြီး၊ အချိန်အများဆုံး ပေးမည့်အဆင့် ဖြစ်သည်။</p>
+
+                <div class="phase-card">
+                    <h3>📋 1. Client ထံမှ အချက်အလက် စုစည်းခံယူခြင်း (Must-Do)</h3>
+                    <ul>
+                        <li>သူတို့သုံးနေသော Mifos ၏ Version အပြည့်အစုံ ကို တောင်းပါ။ (ဒါက schema ဘယ်လောက်ကွဲနိုင်လဲဆိုတာ ခန့်မှန်းဖို့ အဓိကကျ ပါသည်)</li>
+                        <li>သူတို့ DB ၏ Character Set (e.g., utf8, utf8mb4) ကို မေးပါ။ (ဒါမှ မြန်မာစာလို data တွေ ပျက်စီးမှာ မရှိပါ)</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>✂️ 2. 4GB SQL File ကို ဖြတ်ခွဲခြင်း (Critical Step)</h3>
+                    
+                    <div class="alert alert-danger">
+                        <strong>လုံးဝမလုပ်ရမည့်အရာ:</strong> 4GB file ကြီးကို တိုက်ရိုက် import လုပ်ခြင်း။
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <strong>လုပ်ရမည့်အရာ:</strong> SQL file ကို (က) Schema (DDL) သီးသန့် နှင့် (ခ) Data (DML) သီးသန့် file နှစ်ခုခွဲထုတ် ပါ။
+                    </div>
+
+                    <h4>ဘယ်လိုလုပ်မလဲ:</h4>
+                    <p>4GB file ကို text editor နဲ့ ဖွင့်လို့မရပါ။ grep, sed, awk (Linux commands) သို့မဟုတ် Python/Perl script သေးသေးလေးတစ်ခု ရေးပြီး ခွဲထုတ် ပါမည်။</p>
+
+                    <h4>Linux ဥပမာ (ရိုးရင်းပုံစံ):</h4>
+                    <div class="command-block">grep -i "CREATE TABLE" client_backup.sql > schema_old.sql</div>
+                    <div class="command-block">grep -i "INSERT INTO" client_backup.sql > data_old.sql</div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>⚠️ သတိ:</strong> ဒါက ရိုးရင်းသည့် ဥပမာ ပါ။ တကယ်တမ်း INSERT statement တွေက multi-line ဖြစ်နိုင်လို့ပို ရှုပ်ထွေးသည့် script လို ပါမည်။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3>🔄 3. Schema နှိုင်းယှဉ်ခြင်း (Schema Comparison)</h3>
+                    <ol>
+                        <li>သင့် AWS Lightsail ပေါ် က DB အသစ် (Clean DB) တွင် သင့် Mifos project အသစ်ကို run ပြီး လိုအပ်သော table များကို (Flyway/Liquibase) generate လုပ်ခိုင်းပါ။</li>
+                        <li>အဲ့ဒီ DB အသစ်မှ schema ကို dump ထုတ်ပါ (Data မပါ):
+                            <div class="command-block">mysqldump -u [user] -p --no-data [new_db_name] > schema_new.sql</div>
+                        </li>
+                        <li>ခုနက လာသည့် schema_old.sql နှင့် schema_new.sql ကို Schema diff tool (ဥပမာ: SQL Compare, dbForge Schema Compare, DBeaver, or even diff command) သုံးပြီး နှိုင်းယှဉ် ပါ။</li>
+                    </ol>
+                </div>
+
+                <div class="phase-card">
+                    <h3>📝 4. Data Mapping Document တည်ဆွဲခြင်း</h3>
+                    <p>Diff result ကို ကြည့်ပြီး "Mapping Document" (Excel or Markdown) တစ်ခုဆွဲ ပါ။</p>
+                    
+                    <h4>ဥပမာ Table:</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Old Table</th>
+                                <th>Old Column</th>
+                                <th>New Table</th>
+                                <th>New Column</th>
+                                <th>Transformation Rule (မှတ်ချက်)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>m_product_loan</td>
+                                <td>currency_code_id</td>
+                                <td>m_product_loan</td>
+                                <td>currency_code</td>
+                                <td>INT (id) ကို VARCHAR (code) ပြောင်း ရန်။</td>
+                            </tr>
+                            <tr>
+                                <td>m_client</td>
+                                <td>fullname</td>
+                                <td>m_client</td>
+                                <td>display_name</td>
+                                <td>တိုက်ရိုက်ကူးထည့်။</td>
+                            </tr>
+                            <tr>
+                                <td>old_table</td>
+                                <td>(N/A)</td>
+                                <td>new_table</td>
+                                <td>(N/A)</td>
+                                <td>Table အဟောင်း မရှိ၊ အသစ်။ Data ထည့် ရန်မလို။</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="phase2">
+                <h2>🔧 Phase 2: ETL ပတ်ဝန်းကျင် ပြင်ဆင်ခြင်း (ETL Environment Setup)</h2>
+
+                <p>သင်ပြောသလို Lightsail မှာ DB အသစ်လုပ်သော မရန် ပါသည်။ ဒါပေမယ့် 4GB data ကို ကိုင်တွယ် ဖို့ "ကြားခံ" DB တစ်ခု ထပ် လို ပါမည်။</p>
+
+                <div class="phase-card">
+                    <h3>1. "ကြားခံ DB" (Staging Import DB) တည်ဆောက်ခြင်း</h3>
+                    <ul>
+                        <li>Lightsail instance ပေါ် မှာ (သို့မဟုတ် resourceပို ကောင်းသော local computer/EC2 instance) MySQL တွင် DB အလွတ်တစ်ခု (mifos_old_import ဟု နာမည်ပေး ပါ) တည်ဆောက် ပါ။</li>
+                        <li><strong>အစီအစဉ်ကြီးမား:</strong> Client ၏ Character Set (utf8mb4) ကို သုံးပြီး create လုပ် ပါ။</li>
+                    </ul>
+                    
+                    <pre><code>CREATE DATABASE mifos_old_import
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;</code></pre>
+
+                    <p>ဤ DB ထသို့ schema_old.sql (Phase 1 မှ DDL file) ကို import လုပ် ပါ။ (ဒါက schema အဟောင်းကို ပြန်တည်ဆောက်သော ပါ)</p>
+                </div>
+
+                <div class="phase-card">
+                    <h3>2. "Target DB" (New Clean DB) တည်ဆောက်ခြင်း</h3>
+                    <ul>
+                        <li>သင်ပြောသလို Lightsail ပေါ် မှာ DB အသစ် (mifos_new_production ဟု နာမည်ပေး ပါ) တည်ဆောက် ပါ။</li>
+                    </ul>
+
+                    <pre><code>CREATE DATABASE mifos_new_production
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;</code></pre>
+
+                    <p>ဤ DB ထသို့ သင့် project အသစ် မှ schema များကို (Mifos app ကို run ၍) migrate လုပ် ပါ။ (ဒါက schema အသစ်စက်စက် ပါ)</p>
+                </div>
+            </section>
+
+            <section id="phase3">
+                <h2>🔄 Phase 3: Data ထည့်သွင်းခြင်းနှင့် ပြောင်းလဲခြင်း (Extraction, Transformation, Loading - ETL)</h2>
+
+                <p>ဒါက Migration ၏ အဓိကအလုပ် ပါ။</p>
+
+                <div class="phase-card">
+                    <h3>1. Data အဟောင်းကို Import လုပ်ခြင်း</h3>
+                    
+                    <p>mifos_old_import (ကြားခံ DB) ထသို့ data_old.sql (Phase 1 မှ Data file) ကို import လုပ် ပါ။</p>
+
+                    <h4>ပိုမြန်ခြင်းအတွက် (4GB အရွယ်):</h4>
+                    
+                    <div class="alert alert-info">
+                        <strong>Import မလုပ်ခင် MySQL config (my.cnf) ကို ခဏပြင် ပါ။</strong>
+                        <ul>
+                            <li>innodb_buffer_pool_size တိုးခြင်း</li>
+                            <li>innodb_log_file_size ချိန်ညှိခြင်းများ လုပ်နိုင် ပါသည်</li>
+                        </ul>
+                    </div>
+
+                    <p>Import process ကိုပို မြန်အောင် mysql command မသုံးခင် အောက်ပါ command များကို SQL file ထိပ် တွင် ထည့် ပါ:</p>
+
+                    <pre><code>SET FOREIGN_KEY_CHECKS=0;
+SET UNIQUE_CHECKS=0;
+SET SQL_LOG_BIN=0; -- (if binary logging is on)</code></pre>
+
+                    <p>Import command:</p>
+                    <div class="command-block">mysql -u [user] -p --default-character-set=utf8mb4 mifos_old_import < data_old.sql</div>
+
+                    <p>Import ပြီးလျှင် အပေါ် က setting များကို ပြန် enable လုပ် ပါ။</p>
+
+                    <div class="alert alert-warning">
+                        <strong>အကြံပြုချက်:</strong> Lightsail တွင် 4GB import လုပ်နေစဉ် resource မလောက် ပါက၊ သင့် Tomcat (Mifos App) ကို ခဏ ပိတ်ထားပါ။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3>2. Data Transformation Script တည်ခြင်း</h3>
+                    
+                    <p>Phase 1 မှ "Mapping Document" ကို အခြေခံ ပြီး SQL script (or Python/Java script) တစ်ခု ရေး ပါ။</p>
+
+                    <p>ဤ Script ၏ တာဝန်မှာ mifos_old_import (DB အဟောင်း) မှ data များကို ဖတ်၊ လိုအပ်သလို ပြောင်းလဲ (Transform) ပြီး mifos_new_production (DB အသစ်) ထသို့ ထည့် ရန် ဖြစ်သည်။</p>
+
+                    <h4>ဥပမာ SQL Script:</h4>
+                    <pre><code>-- Client data ကို ကူးခြင်း
+INSERT INTO mifos_new_production.m_client (display_name, office_id, ...)
+SELECT
+    old.fullname, -- Mapping အရ fullname ကို display_name အဖြစ်သုံး
+    old.office_id,
+    ...
+FROM mifos_old_import.m_client old;
+
+-- ... အခြား table များအတွက် ဆက်ရေး ရန် ...</code></pre>
+
+                    <div class="alert alert-danger">
+                        <strong>ပိုထားရမည့်အချက်:</strong> Foreign Key Constraints! Table များကို ထည့်သွင်းပါတွင် အစဉ်လိုက် (Order) မှန်ကန် ပါမည်။ (ဥပမာ: m_office ကို အရင်ထည့်၊ ပြီးမှ m_client ကိုထည့်၊ ပြီးမှ m_loan ကိုထည့်)။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3>3. User Passwords ကိစ္စ</h3>
+                    
+                    <ul>
+                        <li>m_appuser table မှ password များသည် hash လုပ်ထားး ပါသည်။</li>
+                        <li>Mifos version မတူလျှင် hashing algorithm ကွဲနိုင်၍ migrate လုပ်၍ အဆင်မပြေ နိုင် ပါ။</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>အစီအစဉ်စီမံနည်းလမ်း:</strong> User အားလုံး၏ password များကို migrate မလုပ်ဘဲ၊ default password အသစ် (e.g., 'password123') ဟု အားလုံးကို reset ချပါ။ ပြီးလျှင် user များကို first login တွင် password ပြန်ပြောင်းခိုင်းပါ။ ဤအချက်ကို Client နှင့် ကြိုတင်ညှိနှိုင်းပါ။
+                    </div>
+                </div>
+            </section>
+
+            <section id="phase4">
+                <h2>✅ Phase 4: စမ်းသပ်ခြင်းနှင့် အတည်ပြုခြင်း (Testing & Validation)</h2>
+
+                <p>Data တွေကူးပြီးပြီဆိုသော နဲ့ မပြီးသေးး ပါဘူး။</p>
+
+                <div class="phase-card">
+                    <h3>1. Data အရေအတွက် စစ်ဆေးခြင်း (Row Count Validation)</h3>
+                    
+                    <pre><code>SELECT COUNT(*) FROM mifos_old_import.m_client;
+SELECT COUNT(*) FROM mifos_new_production.m_client;</code></pre>
+
+                    <p>အရေအတွက် (count) တူညီမှု ရှိမရှိ အဓိကကျသော table တိုင်းကို စစ်ဆေး ပါ။</p>
+                </div>
+
+                <div class="phase-card">
+                    <h3>2. Financial Data စစ်ဆေးခြင်း (Sum Validation)</h3>
+                    
+                    <pre><code>SELECT SUM(loan_amount) FROM mifos_old_import.m_loan;
+SELECT SUM(loan_amount) FROM mifos_new_production.m_loan;</code></pre>
+
+                    <p>စုစုပေါင်း ငွေကြေး မာဏများ (Loan total, Savings total) လုံးဝ တူညီမှုရှိ ပါမည်။</p>
+                </div>
+
+                <div class="phase-card">
+                    <h3>3. လုပ်ဆောင်ချက် စမ်းသပ်ခြင်း (Application Testing)</h3>
+                    
+                    <ul>
+                        <li>သင်၏ Mifos Backend (Tomcat) ကို mifos_new_production (DB အသစ်) နှင့် ချိတ်ဆက်ပြီး run ပါ။</li>
+                        <li>Angular Frontend မှတဆင့် ဝင်ရောက်စမ်းသပ် ပါ။</li>
+                        <li>User အဟောင်းများ login ဝင်နိုင်သလား (Password reset လုပ်ပြီး)။</li>
+                        <li>Client အဟောင်းများ၊ Loan အဟောင်းများ၏ အချက်အလက်များ မှန်ကန်စွာ မြင် သလား။</li>
+                        <li>Loan အသစ်တစ်ခု ပြန်ချေကြည့်ခြင်း (Repayment)၊ ငွေစုခြင်း (Deposit) စသည့် operation သစ်များ ပြီလုပ်ကြည့် ပါ။ Error ရှိမရှိ စစ်ဆေး ပါ။</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="phase5">
+                <h2>🚀 Phase 5: Production Go-Live (တကယ် Run ခြင်း)</h2>
+
+                <p>Test run အောင်မြင်ပြီဆိုလျှင် တကယ့် production အတွက် ပြင်ဆင် ပါမည်။</p>
+
+                <div class="phase-card">
+                    <h3>1. Downtime ညှိနှိုင်းခြင်း</h3>
+                    <ul>
+                        <li>Client ကို သူတို့၏ system အဟောင်းကို ဘယ် အချိန်မှာ ပိတ်မလဲ (Downtime) ကြိုတင်ညှိနှိုင်း ပါ။</li>
+                        <li>Data migration လုပ်နေစဉ် (နာရီ အနည်းငယ် သို့မဟုတ် တစ် ရက်) system အဟောင်းရော၊ အသစ်ရော သုံးလို့မရကြောင်း ရှင်းပြါ။</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>2. Final Data ရယူခြင်း</h3>
+                    <p>Client က system အဟောင်းကိုပိတ် လိုက်သည့်အချိန်တွင် နောက်ဆုံး DB backup (4GB file) ကို ထပ် တောင်း ပါ။</p>
+                </div>
+
+                <div class="phase-card">
+                    <h3>3. Migration Process ခရီး run ခြင်း</h3>
+                    <ul>
+                        <li>mifos_old_import နှင့် mifos_new_production DB များကို ဖျက် (drop) ပြီး အသစ်ပြန်ဆောက် ပါ။</li>
+                        <li>Phase 3 နှင့် 4 ကို အစအဆုံး ပြန်လုပ် ပါ။ (သင်၏ ETL script များက automate ဖြစ်နေသင့်ပြီ)။</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>4. Go-Live</h3>
+                    <p>Validation အားလုံး အောင်မြင်လျှင်၊ သင်၏ production Mifos application (Tomcat & Angular) ကို mifos_new_production DB နှင့် ချိတ်ဆက်ပြီး Client ကို စတင်သုံးစွဲ ပေးပါ။</p>
+                </div>
+            </section>
+
+            <section id="phase6">
+                <h2>📊 Phase 6: Post-Migration (Migration အပြီး)</h2>
+
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <h4>1️⃣ စောင့်ကြည့်ခြင်း (Monitoring)</h4>
+                        <p>Tomcat logs, MySQL error logs များကို အနီးကပ် စောင့်ကြည့် ပါ။</p>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>2️⃣ Backup ယူခြင်း</h4>
+                        <p>Migration အောင်မြင်စွာ ပြီးဆုံးသွားသော mifos_new_production DB ကို ချက်ချင်း backup အပြည့်အစုံ ယူထား ပါ။</p>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>3️⃣ ရှင်းလင်းခြင်း (Cleanup)</h4>
+                        <p>mifos_old_import (ကြားခံ DB) ကို မလိုအပ် တော့လျှင် ဖျက်သိမ်း ပါ။ 4GB file ကြီးကို S3 သို့မဟုတ် Glacier တွင် archive လုပ်ထား ပါ။</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="utf8">
+                <h2>🔤 UTF-8 vs UTF-8MB4 အထူးသတိပြုချက်</h2>
+
+                <div class="alert alert-danger">
+                    <h3>အလွန်အရေးကြီးသော သတိပေးချက် (The utf8 vs utf8mb4 Trap)</h3>
+                    <p>သင်တွေ့သည့် utf8 ကိစ္စက Migration မှာ အဖြစ်များဆုံး ပြဿနာတစ်ခု ပါ။</p>
+                </div>
+
+                <div class="phase-card">
+                    <h3>MySQL ၏ utf8 ဆိုလျှင်မှု:</h3>
+                    <ul>
+                        <li><strong>utf8 (3-byte):</strong> တကယ်တော့ utf8mb3 ဖြစ် ပါသည်။ ဒါ မှာ Unicode character အားလုံးကို မသိမ်းနိုင် ပါဘူး။ (ဥပမာ: Emoji များနှင့် အချို့ သော ရှုပ်ထွေးသည့် အာရဗီစသော စာလုံးများ)</li>
+                        <li><strong>utf8mb4 (4-byte):</strong> "တကယ့်" UTF-8 ဖြစ်ပြီး Unicode character အားလုံးကို သိမ်းနိုင် ပါသည်။</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-warning">
+                    <h3>မြန်မာစာ:</h3>
+                    <p>မြန်မာစာလုံးအများစုက 3-byte အောက်မှာ ရှိသည့်အတွက် utf8 (3-byte) မှာ အဆင်ပြေ ခဲ့ ပါလိမ့်မည်။ ဒါပေမယ့် Client က note တွေ၊ မှတ်ချက်တွေမှာ Emoji ထည့်သုံးမိသော များရှိပါက အဲ့ဒီ data တွေက utf8 မှာ ပျက်စီးသွားနိုင် ပါသည်။</p>
+                </div>
+
+                <div class="alert alert-success">
+                    <h3>အကြံပြုချက် (Must-Do):</h3>
+                    <p>သင့် Project အသစ် တစ်ခုလုံးကို utf8mb4 သုံးပြီး တည်ဆောက် ပါမည်။ ဒါက Future-proof ဖြစ်ပေးဖို့ မဖြစ်မနေ လိုအပ် ပါသည်။</p>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Phase 1 မှာ ထပ်ထည့်ရမည့် အဆင့်:</h3>
+                    <h4>4. (NEW) Schema File ကို utf8mb4ပို ပြင်ဆင်ခြင်း</h4>
+                    <ul>
+                        <li>သင် ခွဲမှာ့ schema_old.sql file (DDL file) ကို text editor (or sed command) နဲ့ ဖွင့် ပါ။</li>
+                        <li>File ထဲ မှာရှိသည့် <code>DEFAULT CHARSET=utf8</code> (သို့မဟုတ် <code>CHARSET=utf8</code>) လို့ ရေးထားသမျှအားလုံးကို <code>DEFAULT CHARSET=utf8mb4</code> လို့ လဲလိုက်ပြင် ပါ။</li>
+                        <li><code>COLLATE=utf8_...</code> (ဥပမာ utf8_general_ci or utf8_unicode_ci) လို့ ရေးထားသမျှအားလုံးကို <code>COLLATE=utf8mb4_unicode_ci</code> လို့ လဲလိုက်ပြင် ပါ။</li>
+                    </ul>
+
+                    <div class="alert alert-danger">
+                        <strong>ဘာကြောင့်လဲ:</strong> ဒီလိုမပြင်ဘဲ import လုပ်လိုက်ပါက၊ သင် အသစ်ဆောက်ထားသည့် DB က utf8mb4 ဖြစ်နေပါကတောင်၊ ဒီ DDL file က table တွေကို utf8 (3-byte) နဲ့ ပြန်ဆောက်သွားမှာ ဖြစ်သည့်အတွက် ပါ။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Tomcat Connection String သတိပြုချက်:</h3>
+                    <p>သင့် Mifos Backend (WAR file) က MySQL ကို ချိတ်ဆက်သည့် application.properties (သို့မဟုတ် context.xml) ထဲ က JDBC URL မှာ character encoding သတ်မှတ်ဖို့ လိုအပ် ပါသည်။</p>
+
+                    <h4>ဥပမာ:</h4>
+                    <pre><code>jdbc:mysql://[host]:3306/mifos_new_production?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8</code></pre>
+
+                    <div class="alert alert-warning">
+                        <p>ဒီနေရာက <code>characterEncoding=UTF-8</code> (or utf8) ဆိုသောက JDBC driver အတွက်ဖြစ်ပြီး၊ ဒါက server ပေါ် က utf8mb4 နဲ့ အဆင်ပြေစွာ အလုပ်လုပ် ပါသည်။</p>
+                        <p><strong>ဒါကို မထည့်မိပါက ပြန်မာစာ data တွေ "???" ဖြစ်သွားနိုင် ပါသည်။</strong></p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="python-script">
+                <h2>🐍 Python Script for Splitting SQL File</h2>
+
+                <p>4GB SQL file ကြီးကို Schema (DDL) နှင့် Data (DML) ခွဲထုတ်ရန် Python script:</p>
+
+                <div class="alert alert-info">
+                    <strong>Features:</strong>
+                    <ul>
+                        <li>Handles multi-line INSERT statements correctly</li>
+                        <li>Memory-efficient (reads line by line)</li>
+                        <li>Progress tracking</li>
+                        <li>Supports UTF-16 encoding (common in Windows mysqldump)</li>
+                    </ul>
+                </div>
+
+                <h3>split_sql_dump.py</h3>
+                <pre><code>import sys
+import os
+import traceback
+
+def split_sql_file(large_sql_file, schema_file_path, data_file_path):
+    """
+    Splits a large SQL file into schema (DDL) and data (DML) files.
+    Version 3:
+    - Removes the progress bar (which can cause [Errno 22] in PowerShell).
+    - Sets input encoding explicitly to 'utf-16-le' (based on 0xff BOM).
+    - Adds traceback for detailed error logging.
+    """
+    print(f"Starting to process '{large_sql_file}'...")
+    
+    try:
+        # UTF-16-LE encoding for input, UTF-8 for output (MySQL standard)
+        with open(large_sql_file, 'r', encoding='utf-16-le') as infile, \
+             open(schema_file_path, 'w', encoding='utf-8') as schema_file, \
+             open(data_file_path, 'w', encoding='utf-8') as data_file:
             
-            <div class="card">
-                <h3>🔧 Phase 2: ETL Environment Setup</h3>
-                <p>Staging database setup and MySQL configuration</p>
-            </div>
+            is_inside_insert = False
+            line_count = 0
             
-            <div class="card">
-                <h3>🔄 Phase 3: Data Migration (ETL)</h3>
-                <p>Extract, Transform, Load data with validation</p>
-            </div>
+            print("Processing file... This may take a long time for a 4GB file.")
             
-            <div class="card">
-                <h3>✅ Phase 4: Testing & Validation</h3>
-                <p>Row counts, financial totals, application testing</p>
-            </div>
+            for line in infile:
+                line_count += 1
+                
+                # Status update every 500,000 lines
+                if line_count % 500000 == 0:
+                    print(f"Processed {line_count:n} lines...")
+                
+                stripped_line = line.strip()
+                
+                # Check for INSERT INTO statement
+                if stripped_line.upper().startswith('INSERT INTO'):
+                    is_inside_insert = True
+                
+                # Write to appropriate file
+                if is_inside_insert:
+                    data_file.write(line)
+                    # mysqldump INSERT statements end with ';'
+                    if stripped_line.endswith(';'):
+                        is_inside_insert = False
+                else:
+                    # Schema/setup line
+                    schema_file.write(line)
             
-            <div class="card">
-                <h3>🚀 Phase 5: Production Go-Live</h3>
-                <p>Final migration and deployment</p>
-            </div>
-            
-            <div class="card">
-                <h3>📊 Phase 6: Post-Migration</h3>
-                <p>Monitoring, backup, and documentation</p>
-            </div>
-            
-            <div class="warning">
-                <strong>⚠️ အရေးကြီးဆုံး:</strong>
-                <ul>
-                    <li>Character encoding က utf8mb4 သာ သုံးပါ</li>
-                    <li>Financial totals တွေ အတိအကျ တူရမယ်</li>
-                    <li>Test ကောင်းကောင်းမလုပ်ဘဲ production မသွားပါနဲ့</li>
-                    <li>အရာအားလုံး backup များများ ယူပါ</li>
+            print(f"\nProcessing complete. Total lines processed: {line_count:n}")
+            print(f"Schema has been saved to: {schema_file_path}")
+            print(f"Data has been saved to: {data_file_path}")
+    
+    except FileNotFoundError:
+        print(f"\nError: The file '{large_sql_file}' was not found.")
+    except Exception as e:
+        print(f"\nAn unexpected error occurred: {e}")
+        print("--- Full Error Traceback ---")
+        traceback.print_exc()
+        print("----------------------------")
+
+# --- HOW TO USE ---
+if __name__ == "__main__":
+    # 1. Change this to match your SQL backup filename
+    input_file = 'full_old_data_bk.sql'
+    
+    # 2. Output filenames
+    schema_output = 'schema_old.sql'
+    data_output = 'data_old.sql'
+    
+    # 3. Run the script
+    if not os.path.exists(input_file):
+        print(f"Error: Input file '{input_file}' not found.")
+        print("Please make sure the file exists and the filename is correct.")
+    else:
+        split_sql_file(input_file, schema_output, data_output)</code></pre>
+
+                <h3>ဘယ်လို အသုံးပြုရမလဲ:</h3>
+                <ol>
+                    <li>အပေါ် က code ကို သင့် computer မှာ <code>split_sql_dump.py</code> ဆိုသည့် နာမည်နဲ့ သိမ်း ပါ။</li>
+                    <li>သင် client ဆီက ရထားသည့် 4GB SQL file နဲ့ Python script ကို directory တစ်ခုတည်းမှာ အတူတူထား ပါ။</li>
+                    <li>Script ထဲက <code>input_file</code> variable ကို သင့် SQL file နာမည်နဲ့ ကိုက်ညီအောင် ပြင် ပါ။</li>
+                    <li>Terminal/PowerShell မှာ run ပါ:
+                        <div class="command-block">python split_sql_dump.py</div>
+                    </li>
+                </ol>
+
+                <div class="alert alert-success">
+                    <strong>Result:</strong> <code>schema_old.sql</code> နှင့် <code>data_old.sql</code> file နှစ်ခု ထွက်လာ ပါလိမ့်မည်။
+                </div>
+
+                <h3>Output ကို စစ်ဆေးခြင်း:</h3>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <h4>1. File Size စစ်ရေးး</h4>
+                        <ul>
+                            <li><code>data_old.sql</code> က အလွန်ကြီးရ ပါမယ် (~3-4GB)</li>
+                            <li><code>schema_old.sql</code> က အလွန်သေးရ ပါမယ် (MB/KB သာ)</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>2. Schema File စစ်ရေးး</h4>
+                        <p>Text editor နဲ့ဖွင့်ကြည့်ပါ - CREATE TABLE, ALTER TABLE စသည့် commands ကိုသာ တွေ့ရမည်</p>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>3. Data File စစ်ရေးး</h4>
+                        <p>PowerShell command:</p>
+                        <div class="command-block" style="font-size: 0.85em;">Get-Content -Path ".\data_old.sql" -TotalCount 10</div>
+                        <p>INSERT INTO statements များကိုသာ တွေ့ရမည်</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="schema-comparison">
+                <h2>🔍 Schema Comparison Tools & Methods</h2>
+
+                <h3>နည်းလမ်း (၁) - အကြံပြုဆုံး: DBeaver Database Tool</h3>
+
+                <div class="phase-card">
+                    <h4>အဆင့် (က) - Old Schema DB ကို တည်ဆောက်ခြင်း</h4>
+                    <ol>
+                        <li>Lightsail MySQL server ပေါ် တွင် test database အလွတ်တစ်ခု တည်ဆောက် ပါ:
+                            <pre><code>CREATE DATABASE mifos_old_schema_test
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;</code></pre>
+                        </li>
+                        <li>Python script နဲ့ ခွဲထုတ်ခဲ့သည့် <code>schema_old.sql</code> file ကို text editor နဲ့ ဖွင့် ပါ။</li>
+                        <li><strong>အရေးကြီးမှု:</strong> File ထဲ မှာ <code>CHARSET=utf8</code> လို့ ပါသမျှ ကို <code>CHARSET=utf8mb4</code> လို့၊ <code>COLLATE=utf8_...</code> ကို <code>COLLATE=utf8mb4_unicode_ci</code> လို့ ပြင် ပါ။</li>
+                        <li>ပြင်ဆင်ပြီးသား schema_old.sql file ကို mifos_old_schema_test DB ထသို့ import လုပ် ပါ:
+                            <div class="command-block">mysql -u [user] -p mifos_old_schema_test < schema_old.sql</div>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="phase-card">
+                    <h4>အဆင့် (ခ) - DBeaver ဖြင့် နှိုင်းယှဉ် ယူခြင်း</h4>
+                    <ol>
+                        <li>DBeaver ကို ဖွင့်ပြီး သင်၏ MySQL server (Lightsail) ကို connect လုပ် ပါ။</li>
+                        <li>Database Navigator (ဘယ် ဘက် panel) မှာ၊ <code>mifos_old_schema_test</code> database ကို Right-click ထောက် ပါ။</li>
+                        <li>"Compare" → "Compare with..." ကို ရွေး ပါ။</li>
+                        <li>Wizard box ကျလာ ပါမည်။ "Target database" နေရာမှာ <code>mifos_new_production</code> ကို ရွေးပြီး "Next" နှိပ် ပါ။</li>
+                        <li>ဘယ် object တွေ နှိုင်းယှဉ်မလဲ မေး ပါလိမ့်မည်။ (Tables, Columns, Indexes တွေကို အမှန်ခြစ်ရေးထားသော သေချာ ပါပေး)။ "Compare" ကို နှိပ် ပါ။</li>
+                        <li>ခဏစောင့်ပြီးနောက်၊ DBeaver က သန့်ရှင်းသပ် သည့် report တစ်ခု ပြ ပေး ပါလိမ့်မည်:
+                            <ul>
+                                <li>ဘယ်ဘက်: mifos_old_schema_test</li>
+                                <li>ညာဘက်: mifos_new_production</li>
+                                <li>ကွဲပြားချက်များ အသေးစိတ် ပြ ပေး ပါမည်</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <div class="alert alert-success">
+                        <strong>ဘာကြောင့် ဒီနည်းက အကောင်းဆုံးလဲ:</strong> ဒီ tool တွေက SQL ကို နားလည်သည့်အတွက် space တွေ၊ comment တွေ၊ table အစဉ်လိုက်တွေကို လျစ်လျူရှုပြီး ကယ် schema က ခြားနားချက် (Column အသစ်၊ Type ပြောင်းသွားသော၊ Table ပျောက်သွားသော) တွေကို အတိအကျ ထုတ်ပြ ပေး ပါသည်။
+                    </div>
+                </div>
+
+                <h3>DBeaver Output ကို Excel သို့ ပြောင်းခြင်း</h3>
+
+                <p>DBeaver က HTML diff report ထုတ်ပေး ပါသည်။ ဒါကို Excel သို့ ပြောင်းရန်:</p>
+
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <h4>နည်းလမ်း ၁: Excel Data Import</h4>
+                        <ol style="font-size: 0.9em;">
+                            <li>Excel မှာ sheet အသစ်ဖွင့်ပါ</li>
+                            <li>"Data" tab → "From Web"</li>
+                            <li>URL box မှာ: <code>file:///D:/MifosMigration/your-diff-report.html</code></li>
+                            <li>Navigator window ကျလာရင် table ရွေးပြီး "Load"</li>
+                        </ol>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>နည်းလမ်း ၂: Copy & Paste</h4>
+                        <ol style="font-size: 0.9em;">
+                            <li>HTML file ကို Browser မှာ ဖွင့်ပါ</li>
+                            <li>Table ကို select လုပ်ပါ (Ctrl+A)</li>
+                            <li>Copy ကူးပါ (Ctrl+C)</li>
+                            <li>Excel မှာ Paste ချပါ (Ctrl+V)</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger">
+                    <strong>လုံခြုံရေး သတိပေးချက်:</strong> Online "HTML to Excel Converter" website များကို လုံးဝ မသုံးပါနဲ့။ သင့် schema diff file ထဲ မှာ client ရဲ့ database တည်ဆောက်ပုံ (table name, column name) များ အကုန်လုံး ပါဝင်နေ ပါသည်။ ဒါက အရေးကြီးသည့် (sensitive) အချက်အလက် ဖြစ်သည့်အတွက်၊ အင်တာနက်ပေါ် က တတိယပါတီ website များဆီ upload လုပ်လိုက်သော ကာ လုံခြုံရေးအ အလွန်အန္တရာယ် များ ပါသည်။
+                </div>
+            </section>
+
+            <section id="excel-analysis">
+                <h2>📊 Excel Analysis & Data Mapping</h2>
+
+                <h3>Excel Formula များ အသုံးပြုခြင်း</h3>
+
+                <div class="phase-card">
+                    <h4>1. "diff" စစ်ဆေးပြီး အလိုအလျောက် ရေးခြင်း</h4>
+                    <p>Column A နှင့် Column B ကွဲပြားရင် Column C မှာ "diff" ရေးခြင်း (N/A များကို ကျော်ခြင်း):</p>
+                    
+                    <pre><code>=IF(OR(A1="N/A", B1="N/A"), "", IF(A1<>B1, "diff", ""))</code></pre>
+                    
+                    <p>C1 cell မှာ ဒီ formula ထည့်ပြီး အောက်ကို drag လုပ်ပါ။</p>
+                </div>
+
+                <div class="phase-card">
+                    <h4>2. Conditional Formatting - "diff" ဆိုရင် အနီရောင် ခြယ်ခြင်း</h4>
+                    <ol>
+                        <li>Column A နှင့် B တစ်ခုလုံးကို select လုပ်ပါ</li>
+                        <li>Home tab → Conditional Formatting → New Rule...</li>
+                        <li>"Use a formula to determine which cells to format" ရွေးပါ</li>
+                        <li>Formula box မှာ ရိုက်ပါ: <code>=$C1="diff"</code></li>
+                        <li>Format... button → Fill tab → အနီရောင် ရွေးပါ</li>
+                        <li>OK နှိပ်ပါ</li>
+                    </ol>
+
+                    <div class="alert alert-info">
+                        <strong>Formula ရှင်းလင်းချက်:</strong> <code>$C1="diff"</code> သည် C column ကို "လော့ခ်" (lock) လုပ်ထားပြီး၊ row number က relative ဖြစ်ပါသည်။ A1 cell ကို format လုပ်တဲ့အခါ C1 ကို စစ်၊ A2 ကို format လုပ်တဲ့အခါ C2 ကို စစ် စသဖြင့် အလုပ်လုပ် ပါသည်။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>3. N/A တန်ဖိုးများ ရေတွက်ခြင်း</h4>
+                    <p>Sheet2 တွင် အောက်ပါ formula များကို သုံးပါ:</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Label (A column)</th>
+                                <th>Formula (B column)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Column A N/A Count</td>
+                                <td><code>=COUNTIF(Sheet1!A:A, "N/A")</code></td>
+                            </tr>
+                            <tr>
+                                <td>Column B N/A Count</td>
+                                <td><code>=COUNTIF(Sheet1!B:B, "N/A")</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="phase-card">
+                    <h4>4. "diff" rows များကိုသာ Sheet 2 သို့ ကူးယူခြင်း</h4>
+                    <p><strong>FILTER Function (Excel 365/2021):</strong></p>
+                    
+                    <p>Sheet2 ရဲ့ A1 cell မှာ:</p>
+                    <pre><code>=FILTER(Sheet1!A:G, Sheet1!E:E="diff")</code></pre>
+                    
+                    <div class="alert alert-success">
+                        <strong>Dynamic Formula:</strong> ဒီ formula က Sheet1 မှာ data ပြောင်းရင် အလိုလျောက် update ဖြစ် ပါမည်။ A:G ကို သင့် data ရဲ့ နောက်ဆုံး column နဲ့ ကိုက်အောင် ပြင်ပါ။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>5. Table Name ကို Dynamic ရယူခြင်း</h4>
+                    <p>Column E မှာ "diff" သို့မဟုတ် "N/A" တွေ့ရင် အပေါ်က အနီးဆုံး Table Name ကို ပြန်ပေးခြင်း:</p>
+                    
+                    <pre><code>=IF(OR(D9="diff", D9="N/A"), LOOKUP(2, 1/($A$9:$A9="Table Name"), $B$9:$B9), "")</code></pre>
+                    
+                    <p>E9 cell မှာ ဒီ formula ထည့်ပြီး အောက်ကို drag လုပ်ပါ။</p>
+
+                    <div class="alert alert-info">
+                        <strong>ဘယ်လို အလုပ်လုပ်သလဲ:</strong>
+                        <ul>
+                            <li>LOOKUP trick က အပေါ်က "Table Name" ရှာပြီး၊ နောက်ဆုံးတွေ့တဲ့ table name ကို ပြန်ပေး ပါသည်</li>
+                            <li>$A$9:$A9 range က formula ကို drag လုပ်တိုင်း "ကြီးထွားလာ" ပါသည် ($A$9:$A10, $A$9:$A11...)</li>
+                            <li>ဒါကြောင့် current row အထက်က အနီးဆုံး table name ကို အမြဲတွေ့ ပါသည်</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Schema Diff များ နားလည်ခြင်း</h3>
+
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <h4>Cardinality</h4>
+                        <p><strong>အဓိပ္ပာယ်:</strong> Column တစ်ခုမှာ ရှိသော unique values အရေအတွက်</p>
+                        <ul style="font-size: 0.9em;">
+                            <li><strong>High:</strong> ID, username (unique များ)</li>
+                            <li><strong>Low:</strong> gender, boolean (ထပ်နေသော များ)</li>
+                        </ul>
+                        <div class="alert alert-warning" style="margin-top: 10px;">
+                            <strong>Migration Impact:</strong> အဟောင်း DB မှာ data ရှိလို့ 5, 17 စသည့် တန်ဖိုးများ ရှိနေပြီး၊ အသစ် DB က empty ဖြစ်လို့ 0 ဖြစ်နေသည်။ ဒါက ပုံမှန် ဖြစ်ပြီး လျစ်လျူရှုနိုင် ပါသည်။
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>Index length</h4>
+                        <p><strong>အဓိပ္ပာယ်:</strong> Index က disk space မည်မျှ သုံးနေသလဲ</p>
+                        <div class="alert alert-warning">
+                            <strong>Migration Impact:</strong> အဟောင်း (48K) မှာ data ရှိပြီး အသစ် (16K) က default empty size သာ ဖြစ်သည်။ လျစ်လျူရှုနိုင် ပါသည်။
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h4>Data free</h4>
+                        <p><strong>အဓိပ္ပာယ်:</strong> Table file အတွင်း fragmented empty space</p>
+                        <div class="alert alert-warning">
+                            <strong>Migration Impact:</strong> အဟောင်း DB မှာ data ဖျက်ခဲ့တဲ့အတွက် 4MB free space ကျန်ရစ်၊ အသစ် DB က empty ဖြစ်လို့ 0 ဖြစ်သည်။ လျစ်လျူရှုနိုင် ပါသည်။
+                        </div>
+                    </div>
+                </div>
+
+                <h3>အရေးကြီးသော Schema Changes</h3>
+
+                <div class="phase-card">
+                    <h4>⚠️ Critical: tinyint vs bit(1) နှင့် 0 vs b'0'</h4>
+                    <ul>
+                        <li><strong>Old (tinyint):</strong> Boolean တန်ဖိုးကို integer (0=false, 1=true) အဖြစ် သိမ်း</li>
+                        <li><strong>New (bit(1)):</strong> Boolean တန်ဖိုးကို single bit (b'0', b'1') အဖြစ် သိမ်း</li>
+                    </ul>
+                    <div class="alert alert-success">
+                        <strong>Migration Action:</strong> MySQL က automatic conversion လုပ်ပေးပါသည်။ integer 0 ကို bit b'0' သို့ အလိုအလျောက် ပြောင်း ပါသည်။ Phase 4 testing မှာ verify လုပ်ရန်။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>⚠️ Critical: Cascade vs Restrict (Foreign Key)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Setting</th>
+                                <th>Behavior</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Old (Cascade)</strong></td>
+                                <td>Parent row ဖျက်ရင် child rows များ အလိုအလျောက် ဖျက် ပါသည်</td>
+                            </tr>
+                            <tr>
+                                <td><strong>New (Restrict)</strong></td>
+                                <td>Child rows များ ရှိနေရင် parent row ကို ဖျက်ခွင့် မပြု ပါ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="alert alert-danger">
+                        <strong>Migration Impact:</strong> Initial import မှာ ပြဿနာ မရှိပါ (parent ကို အရင် import လုပ်ရုံ)။ သို့သော် application ရဲ့ business logic ပြောင်းသွား ပါသည်။ Post-migration testing မှာ ဂရုစိုက် စစ်ဆေးရန်။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>🚨 Critical: decimal vs decimal unsigned</h4>
+                    <ul>
+                        <li><strong>decimal(10,8):</strong> အပေါင်း/အနုတ် နှစ်မျိုးလုံး သိမ်းနိုင်</li>
+                        <li><strong>decimal(10,8) unsigned:</strong> အပေါင်း သာ သိမ်းနိုင်</li>
+                    </ul>
+                    <div class="alert alert-danger">
+                        <strong>Migration Risk:</strong> အဟောင်း DB မှာ အနုတ် တန်ဖိုး ရှိရင် INSERT ရှင်းရှင်း fail ပါမည်။
+                        <br><br>
+                        <strong>Action:</strong> Migration မလုပ်ခင် စစ်ဆေး ပါ:
+                        <pre style="margin-top: 10px;"><code>SELECT * FROM [table_name] WHERE [column_name] < 0;</code></pre>
+                        အနုတ်တန်ဖိုးများ တွေ့ရင် Client နဲ့ တိုင်ပင် ပါ (0 လုပ်မလား၊ အပေါင်းလုပ်မလား၊ schema ပြင်မလား)။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>⚠️ Warning: datetime(6) vs datetime</h4>
+                    <ul>
+                        <li><strong>datetime(6):</strong> Microsecond precision (.123456)</li>
+                        <li><strong>datetime:</strong> Second precision သာ</li>
+                    </ul>
+                    <div class="alert alert-warning">
+                        <strong>Migration Impact:</strong> Data loss (precision truncation) ဖြစ်မည်။ Financial platform အတွက် Client နဲ့ confirm လုပ်ပါ။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>✅ Safe: tinyint vs smallint</h4>
+                    <p>ဒါက safe "up-size" ဖြစ်ပါသည်။</p>
+                    <ul>
+                        <li><strong>tinyint:</strong> -128 to 127</li>
+                        <li><strong>smallint:</strong> -32,768 to 32,767</li>
+                    </ul>
+                    <div class="alert alert-success">
+                        <strong>Migration Impact:</strong> လုံးဝ safe ဖြစ်ပါသည်။ tinyint အတွင်း ဝင်သော ဂဏန်းများ အားလုံး smallint မှာ အဆင်ပြေစွာ ဝင်နိုင် ပါသည်။
+                    </div>
+                </div>
+
+                <div class="phase-card">
+                    <h4>🔑 Critical: UNI vs MUL (Index Type)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Meaning</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>UNI (Old)</strong></td>
+                                <td>UNIQUE index - duplicate တွေ ခွင့်မပြု</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MUL (New)</strong></td>
+                                <td>Multiple (non-unique) index - duplicate တွေ ခွင့်ပြု</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="alert alert-success">
+                        <strong>Migration Impact:</strong> ဒါက migration ကို ပို လွယ်ကူအောင် လုပ်ပေး ပါသည်။ Duplicate data ကြောင့် INSERT fail ဖြစ်မှာ စိုးရိမ်စရာ မလို ပါတော့။
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Business Logic:</strong> အဟောင်း system က unique rule enforce လုပ်ခဲ့ပြီး အသစ် system က duplicate ခွင့်ပြုပါသည်။ ဒါက expected change လား Client/Dev team နဲ့ confirm လုပ်ပါ။
+                    </div>
+                </div>
+            </section>
+
+            <section id="warnings">
+                <h2>⚠️ အကျဉ်းချုပ် သတိပြုချက်များ (Quick Summary of Warnings)</h2>
+
+                <div class="summary-box">
+                    <h3>✅ လုပ်ရမည့်အရာများ (MUST DO)</h3>
+                    <ul>
+                        <li><strong>စုံစမ်းပါ:</strong> Client ၏ Mifos Version နှင့် Character Set ကို မဖြစ်မနေမေး ပါ။</li>
+                        <li><strong>ခွဲပါ:</strong> 4GB file ကို DDL (Schema) နှင့် DML (Data) ဟု file နှစ်ခု ခွဲထုတ် ပါ။</li>
+                        <li><strong>မသွားပါနဲ့:</strong> DDL အဟောင်းကို သင့် DB အသစ်ပေါ် တိုက်ရိုက်မ run ပါနဲ့။</li>
+                        <li><strong>ကြားခံသုံးပါ:</strong> Data အဟောင်းကို import လုပ်ရန် mifos_old_import DB (ကြားခံ) တစ်ခု သီးသန့်သုံး ပါ။</li>
+                        <li><strong>Script ရေးပါ:</strong> mifos_old_import မှ mifos_new_production သို့ data ကူးပြောင်း ရန် ETL Script (SQL or Python) ရေး ပါ။</li>
+                        <li><strong>Reset လုပ်ပါ:</strong> User password များကို migrate လုပ်ရန် မကြိုးစားစားေးပါနဲ့။ Reset ချပြီး first login change ကို သုံး ပါ။</li>
+                        <li><strong>စစ်ဆေးပါ:</strong> Row Count နှင့် Financial Sum (စုစုပေါင်းငွေ) များ တူညီမှုရှိမရှိ သေချာစစ်ဆေး ပါ။</li>
+                        <li><strong>utf8mb4:</strong> Database အသစ် တစ်ခုလုံးကို utf8mb4 သုံးပါ (utf8 မသုံးပါနဲ့)။</li>
+                        <li><strong>Backup:</strong> အရာအားလုံး လုပ်ခင် backup များများ ယူထား ပါ။</li>
+                    </ul>
+                </div>
+
+                <div class="summary-box" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    <h3>🚫 မလုပ်ရမည့်အရာများ (DO NOT DO)</h3>
+                    <ul>
+                        <li>4GB file ကို text editor နဲ့ မဖွင့်ပါနဲ့</li>
+                        <li>DDL အဟောင်းကို DB အသစ်မှာ တိုက်ရိုက် မ run ပါနဲ့</li>
+                        <li>Production DB မှာ တိုက်ရိုက် test မလုပ်ပါနဲ့</li>
+                        <li>Schema comparison မလုပ်ဘဲ မ migrate ပါနဲ့</li>
+                        <li>Validation/Testing ကျော်ပြီး go-live မလုပ်ပါနဲ့</li>
+                        <li>Online converter sites များမှာ sensitive data များ upload မလုပ်ပါနဲ့</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info">
+                    <h3>💡 Lightsail Resource သတိပေးချက်</h3>
+                    <p>4GB data import နှင့် ETL process သည် သင်၏ Lightsail instance ၏ RAM/CPU ကို အလွန်အမင်း သုံးစွဲ ပါမည်။ Migration လုပ်နေစဉ် Tomcat ကို ခဏ ပိတ်ထားခြင်းဖြင့် resourceပို စုနိုင် ပါသည်။</p>
+                </div>
+
+                <h3>🛠️ လိုအပ်သော Tools</h3>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <h4>DBeaver</h4>
+                        <p>Schema comparison အတွက် အကောင်းဆုံး free tool</p>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h4>Python 3.x</h4>
+                        <p>File splitting scripts အတွက်</p>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h4>MySQL Client</h4>
+                        <p>Database operations များ လုပ်ရန်</p>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h4>Excel/LibreOffice</h4>
+                        <p>Mapping documentation နှင့် analysis အတွက်</p>
+                    </div>
+                </div>
+            </section>
+
+            <section style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin: 40px 0;">
+                <h2>📋 Migration Checklist</h2>
+                
+                <h3>Phase 1: Preparation</h3>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>☐ Client ထံမှ Mifos version ရယူပြီး</li>
+                    <li>☐ Character set သိရှိပြီး</li>
+                    <li>☐ 4GB SQL file ကို Python script နဲ့ ခွဲပြီး</li>
+                    <li>☐ schema_old.sql ရပြီး</li>
+                    <li>☐ data_old.sql ရပြီး</li>
+                    <li>☐ utf8 ကို utf8mb4 ပြင်ပြီး</li>
+                    <li>☐ DBeaver နဲ့ schema comparison လုပ်ပြီး</li>
+                    <li>☐ Data Mapping Document ဆွဲပြီး</li>
                 </ul>
+
+                <h3>Phase 2: Setup</h3>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>☐ mifos_old_import DB (utf8mb4) တည်ဆောက်ပြီး</li>
+                    <li>☐ mifos_new_production DB (utf8mb4) တည်ဆောက်ပြီး</li>
+                    <li>☐ schema_old.sql ကို old DB မှာ import ပြီး</li>
+                    <li>☐ Mifos app run ပြီး new DB မှာ schema generate ပြီး</li>
+                </ul>
+
+                <h3>Phase 3: ETL</h3>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>☐ MySQL config optimize လုပ်ပြီး</li>
+                    <li>☐ data_old.sql ကို old DB မှာ import ပြီး</li>
+                    <li>☐ ETL/Transformation script ရေးပြီး</li>
+                    <li>☐ Foreign key order မှန်ကန်မှု စစ်ပြီး</li>
+                    <li>☐ User password reset strategy confirm ပြီး</li>
+                    <li>☐ ETL script run ပြီး</li>
+                </ul>
+
+                <h3>Phase 4: Testing</h3>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>☐ Row count validation pass ပြီး</li>
+                    <li>☐ Financial sum validation pass ပြီး</li>
+                    <li>☐ Application login test pass ပြီး</li>
+                    <li>☐ Data display test pass ပြီး</li>
+                    <li>☐ Transaction test pass ပြီး</li>
+                    <li>☐ Critical business functions test pass ပြီး</li>
+                </ul>
+
+                <h3>Phase 5: Go-Live</h3>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>☐ Downtime window ညှိနှိုင်းပြီး</li>
+                    <li>☐ Final backup ရပြီး</li>
+                    <li>☐ Production migration လုပ်ပြီး</li>
+                    <li>☐ Final validation pass ပြီး</li>
+                    <li>☐ Application switched ပြီး</li>
+                    <li>☐ Users notified ပြီး</li>
+                </ul>
+
+                <h3>Phase 6: Post-Migration</h3>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>☐ Production DB backup ယူပြီး</li>
+                    <li>☐ Monitoring setup လုပ်ပြီး</li>
+                    <li>☐ Staging DBs cleanup လုပ်ပြီး</li>
+                    <li>☐ Documentation update လုပ်ပြီး</li>
+                </ul>
+            </section>
+
+            <div class="alert alert-success" style="margin: 40px 0;">
+                <h3 style="margin-top: 0;">🎉 နိဂုံးချုပ်</h3>
+                <p>ဤ guide သည် Mifos data migration လုပ်ရန် လိုအပ်သော အဆင့်တိုင်းကို အသေးစိတ် ဖော်ပြပေး ထားပါသည်။ အဆင့်တိုင်းကို သေချာစွာ လိုက်နာလုပ်ဆောင်ပါက migration လုပ်ငန်းစဉ် အောင်မြင်ပြီး data integrity ကို ထိန်းသိမ်းနိုင် ပါလိမ့်မည်။</p>
+                
+                <p style="margin-top: 20px;"><strong>အရေးကြီးဆုံး သတိပေးချက်များ:</strong></p>
+                <ol>
+                    <li><strong>Backup များများ ယူပါ:</strong> အဆင့်တိုင်းမှာ backup ယူထားပါ</li>
+                    <li><strong>Test Environment:</strong> Production မှာ တိုက်ရိုက် test မလုပ်ပါနဲ့</li>
+                    <li><strong>Validation:</strong> Data ရေအတွက်၊ ငွေကြေး စုစုပေါင်းများ သေချာစစ်ပါ</li>
+                    <li><strong>Client Communication:</strong> အဆင့်တိုင်းကို client နဲ့ ကောင်းစွာ ညှိနှိုင်းပါ</li>
+                    <li><strong>Rollback Plan:</strong> တစ်ခုခု မှားရင် ပြန်ဆုတ်နည်း အစီအစဉ် ရှိထားပါ</li>
+                </ol>
             </div>
-            
-            <h2>🛠️ လိုအပ်တဲ့ Tools</h2>
-            <ul>
-                <li><strong>DBeaver</strong> - Schema comparison</li>
-                <li><strong>Python 3.x</strong> - File splitting scripts</li>
-                <li><strong>MySQL Client</strong> - Database operations</li>
-                <li><strong>Excel/LibreOffice</strong> - Mapping documentation</li>
-            </ul>
-        </div>
-        
-        <div class="download-section">
-            <h2>📥 Complete Guide ကို Download လုပ်ပါ</h2>
-            <p style="margin: 20px 0;">Full markdown documentation with all scripts and examples</p>
-            <a href="Data_Migration_and_ETL_Plan.md" class="download-btn" download>
-                📄 Download Full Guide (MD)
-            </a>
-            <p style="margin-top: 20px; color: #666;">
-                <small>File size: ~100KB | Format: Markdown | Language: Myanmar</small>
-            </p>
+
+            <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 10px; margin: 40px 0;">
+                <h2 style="color: white; border: none; margin-top: 0;">🎓 အပိုဆောင်း အကြံပြုချက်များ</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: white; margin-top: 0;">🔒 လုံခြုံရေး</h4>
+                        <ul style="color: white; opacity: 0.95;">
+                            <li>Database credentials များကို secure ထားပါ</li>
+                            <li>Backup files များကို encrypted storage မှာ သိမ်းပါ</li>
+                            <li>Production database ကို development team အားလုံး access မပေးပါနဲ့</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: white; margin-top: 0;">⚡ Performance</h4>
+                        <ul style="color: white; opacity: 0.95;">
+                            <li>Large imports အတွက် MySQL buffer pool size တိုးပါ</li>
+                            <li>Foreign key checks ကို temporary disable လုပ်ပါ</li>
+                            <li>Import ပြီးမှ indexes များကို optimize လုပ်ပါ</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: white; margin-top: 0;">📝 Documentation</h4>
+                        <ul style="color: white; opacity: 0.95;">
+                            <li>Schema changes များကို သေချာ document လုပ်ပါ</li>
+                            <li>Data transformation rules များကို မှတ်တမ်းတင်ပါ</li>
+                            <li>Troubleshooting steps များကို ရေးထားပါ</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="troubleshooting">
+                <h2>🛠️ Troubleshooting - အဖြစ်များသော ပြဿနာများနှင့် ဖြေရှင်းနည်းများ</h2>
+
+                <div class="phase-card">
+                    <h3>Error: [Errno 22] Invalid argument</h3>
+                    <p><strong>အကြောင်းရင်း:</strong> File encoding ပြဿနာ (UTF-16 ဖြစ်နေခြင်း) သို့မဟုတ် PowerShell progress bar ပြဿနာ</p>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <ul>
+                        <li>Python script မှာ encoding ကို <code>utf-16-le</code> သို့ ပြောင်းပါ</li>
+                        <li>Progress bar code များကို ဖယ်ရှားပါ</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Error: 'utf-8' codec can't decode byte 0xff</h3>
+                    <p><strong>အကြောင်းရင်း:</strong> SQL file က UTF-16 encoding ဖြစ်နေခြင်း</p>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <pre><code>with open(large_sql_file, 'r', encoding='utf-16-le') as infile:</code></pre>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Error: Duplicate entry for key 'PRIMARY'</h3>
+                    <p><strong>အကြောင်းရင်း:</strong> Primary key တန်ဖိုးများ ထပ်နေခြင်း</p>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <ul>
+                        <li>Target DB ကို truncate/drop လုပ်ပြီး ပြန် import လုပ်ပါ</li>
+                        <li>ETL script မှာ <code>INSERT IGNORE</code> သို့မဟုတ် <code>ON DUPLICATE KEY UPDATE</code> သုံးပါ</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Error: Foreign key constraint fails</h3>
+                    <p><strong>အကြောင်းရင်း:</strong> Parent table ကို child table အရင် insert လုပ်နေခြင်း</p>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <ul>
+                        <li>Table import order ကို မှန်ကန်အောင် စီပါ (parent ကို အရင်)</li>
+                        <li>Temporary အနေနဲ့ <code>SET FOREIGN_KEY_CHECKS=0;</code> သုံးပါ (သတိထားပါ)</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Error: Data truncated for column</h3>
+                    <p><strong>အကြောင်းရင်း:</strong> Column size မလုံလောက်ခြင်း သို့မဟုတ် data type မကိုက်ညီခြင်း</p>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <ul>
+                        <li>Data Mapping Document မှာ transformation rule ထည့်ပါ</li>
+                        <li>ETL script မှာ CAST/CONVERT functions သုံးပါ</li>
+                        <li>အဟောင်း data ကို clean လုပ်ပါ</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>မြန်မာစာ ပျက်စီးနေခြင်း (???)</h3>
+                    <p><strong>အကြောင်းရင်း:</strong> Character encoding မမှန်ကန်ခြင်း</p>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <ul>
+                        <li>Database ကို utf8mb4 ဖြင့် create လုပ်ထားရမည်</li>
+                        <li>JDBC connection string မှာ <code>characterEncoding=UTF-8</code> ပါရမည်</li>
+                        <li>Import လုပ်တဲ့အခါ <code>--default-character-set=utf8mb4</code> သုံးပါ</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <h3>Import လွန်းစွာ နှေးကွေးနေခြင်း</h3>
+                    <p><strong>ဖြေရှင်းနည်း:</strong></p>
+                    <ul>
+                        <li>MySQL config မှာ <code>innodb_buffer_pool_size</code> တိုးပါ</li>
+                        <li><code>SET FOREIGN_KEY_CHECKS=0;</code> သုံးပါ</li>
+                        <li><code>SET UNIQUE_CHECKS=0;</code> သုံးပါ</li>
+                        <li>Batch size ကို ကြီးအောင် လုပ်ပါ (bulk inserts)</li>
+                        <li>Indexes များကို import အပြီးမှ create လုပ်ပါ</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section style="background: #e3f2fd; padding: 30px; border-radius: 10px; margin: 40px 0;">
+                <h2>📞 အကူအညီ လိုအပ်ပါက</h2>
+                <p>Migration process အတွင်း ပြဿနာများ ကြုံတွေ့ရပါက:</p>
+                <ol>
+                    <li><strong>Error Messages:</strong> Error message အပြည့်အစုံ၊ stack trace များကို သိမ်းထားပါ</li>
+                    <li><strong>Context:</strong> မည်သည့် phase မှာ ဖြစ်သလဲ၊ ဘာ command run ထားသလဲ မှတ်သားပါ</li>
+                    <li><strong>Environment:</strong> MySQL version, Lightsail specs, file sizes စသည်များ သိရှိထားပါ</li>
+                    <li><strong>Logs:</strong> MySQL error log, application log များကို စစ်ဆေးပါ</li>
+                </ol>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4>🔗 Useful Resources:</h4>
+                    <ul>
+                        <li><strong>MySQL Documentation:</strong> <a href="https://dev.mysql.com/doc/" target="_blank">https://dev.mysql.com/doc/</a></li>
+                        <li><strong>Mifos Documentation:</strong> <a href="https://mifos.org/" target="_blank">https://mifos.org/</a></li>
+                        <li><strong>DBeaver Documentation:</strong> <a href="https://dbeaver.io/docs/" target="_blank">https://dbeaver.io/docs/</a></li>
+                    </ul>
+                </div>
+            </section>
+
+            <section style="background: #fff8e1; padding: 30px; border-radius: 10px; margin: 40px 0; border-left: 5px solid #ffc107;">
+                <h2>⏱️ ခန့်မှန်း အချိန်ဇယား (Estimated Timeline)</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th>ခန့်မှန်း အချိန်</th>
+                            <th>မှတ်ချက်</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Phase 1: Preparation</strong></td>
+                            <td>2-3 ရက်</td>
+                            <td>Schema analysis အများဆုံး ကြာ</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase 2: Setup</strong></td>
+                            <td>4-6 နာရီ</td>
+                            <td>DB creation နှင့် schema import</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase 3: ETL</strong></td>
+                            <td>1-2 ရက်</td>
+                            <td>4GB import + script writing</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase 4: Testing</strong></td>
+                            <td>1-2 ရက်</td>
+                            <td>Thorough testing လိုအပ်</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase 5: Go-Live</strong></td>
+                            <td>4-8 နာရီ</td>
+                            <td>Final migration နှင့် verification</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase 6: Post-Migration</strong></td>
+                            <td>1 ရက်</td>
+                            <td>Monitoring နှင့် cleanup</td>
+                        </tr>
+                        <tr style="background: #ffe082; font-weight: bold;">
+                            <td><strong>စုစုပေါင်း</strong></td>
+                            <td><strong>7-10 ရက်</strong></td>
+                            <td><strong>အနိမ့်ဆုံး ခန့်မှန်းချက်</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-warning" style="margin-top: 20px;">
+                    <strong>⚠️ သတိပြုရန်:</strong> ဒါက အနိမ့်ဆုံး timeline ဖြစ်ပါသည်။ Schema complexity၊ data volume၊ ပြဿနာများ တွေ့ရှိမှု အပေါ် မူတည်ပြီး ပို ကြာနိုင် ပါသည်။ Buffer time ထပ် ထည့်သွင်း စဉ်းစားပါ။
+                </div>
+            </section>
+
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 10px; text-align: center; margin: 40px 0;">
+                <h2 style="color: white; border: none; margin-top: 0;">🎉 ပြီးမြောက်အောင်မြင်ကြပါစေ!</h2>
+                <p style="font-size: 1.1rem; margin: 20px 0;">ဤ comprehensive guide ကို လိုက်နာလုပ်ဆောင်ခြင်းဖြင့် Mifos data migration ကို အောင်မြင်စွာ ပြီးမြောက်အောင် လုပ်ဆောင်နိုင် ပါလိမ့်မည်။</p>
+                <p style="font-size: 0.95rem; opacity: 0.9; margin-top: 30px;">သင့်ရဲ့ migration project ကို ကောင်းမွန်စွာ စီမံခန့်ခွဲပြီး client ကို ကျေနပ်အားရစေသော ရလဒ် ရရှိပါစေ! 💪</p>
+            </div>
+
         </div>
         
         <footer>
-            <p>&copy; 2025 Mifos Migration Project | Version 2.0</p>
-            <p style="margin-top: 10px; opacity: 0.8;">
-                <small>Last Updated: October 21, 2025</small>
+            <h3 style="margin-bottom: 15px;">📄 Mifos Data Migration & ETL Plan</h3>
+            <p>&copy; 2025 Mifos Migration Project | Version 2.0 (Complete)</p>
+            <p style="margin-top: 15px; opacity: 0.9;">
+                <strong>Last Updated:</strong> Tuesday, October 21, 2025
             </p>
+            <p style="margin-top: 10px; opacity: 0.8; font-size: 0.9rem;">
+                Complete guide including: Analysis, 6 Migration Phases, UTF-8/UTF-8MB4 handling, 
+                Python splitting script, DBeaver schema comparison, Excel analysis formulas, 
+                Troubleshooting, and detailed checklist
+            </p>
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p style="font-size: 0.85rem; opacity: 0.7;">
+                    This guide covers complete ETL (Extract, Transform, Load) process for MySQL database migration 
+                    from legacy Mifos system to new Mifos system with comprehensive validation and testing procedures.
+                </p>
+            </div>
         </footer>
     </div>
 </body>
