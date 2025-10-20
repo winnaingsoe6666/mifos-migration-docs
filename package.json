@@ -1,0 +1,12 @@
+{
+  "name": "mifos-migration-docs",
+  "version": "1.0.0",
+  "description": "Mifos Data Migration Documentation",
+  "scripts": {
+    "dev": "docsify serve docs",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["mifos", "migration", "documentation"],
+  "author": "Your Team Name",
+  "license": "ISC"
+}

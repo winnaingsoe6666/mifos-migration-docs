@@ -1,0 +1,17 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.vercel
+split_sql_dump.py
+schema_diff.xlsx
+schema_diff_copy.xlsx
+plan.md
+full_old_data_bk.sql
+schema_old.sql
+data_old.sql
+Data_migration_plan.md
+Data_Migration_and_ETL_Plan_Fixed.md
+Data migration plan.pdf
+compare-fineract_unique-mifos_old_schema_test-report.html
+~$schema_diff_copy.xlsx
