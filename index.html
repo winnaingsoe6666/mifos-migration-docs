@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mifos Data Migration Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .download-section {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Mifos Data Migration Guide</h1>
+            <p>Complete ETL Plan for MySQL Database Migration (Myanmar)</p>
+        </header>
+        
+        <div class="content">
+            <div class="success">
+                <strong>✅ အောင်မြင်စွာ Migration လုပ်ရန်:</strong> ဒီ guide ကို step by step လိုက်ပါ၊ validation တိုင်းကို သေချာ လုပ်ပါ။
+            </div>
+            
+            <h2>📋 ဒီ Guide မှာ ပါဝင်တာတွေ</h2>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h4>6 Phases</h4>
+                    <p>Complete migration workflow from planning to go-live</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🔧</div>
+                    <h4>ETL Scripts</h4>
+                    <p>Python & SQL scripts for data transformation</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">✅</div>
+                    <h4>Validation</h4>
+                    <p>Complete testing & validation procedures</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🐛</div>
+                    <h4>Troubleshooting</h4>
+                    <p>Common issues and solutions</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🎯 Phase 1: ကြိုတင်ပြင်ဆင်ခြင်း</h3>
+                <p>Schema analysis, file splitting, character encoding fixes</p>
+                <ul>
+                    <li>4GB SQL file ကို DDL နှင့် DML ခွဲထုတ်ခြင်း</li>
+                    <li>utf8 မှ utf8mb4 ပြောင်းလဲခြင်း</li>
+                    <li>DBeaver နှင့် schema comparison</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>🔧 Phase 2: ETL Environment Setup</h3>
+                <p>Staging database setup and MySQL configuration</p>
+            </div>
+            
+            <div class="card">
+                <h3>🔄 Phase 3: Data Migration (ETL)</h3>
+                <p>Extract, Transform, Load data with validation</p>
+            </div>
+            
+            <div class="card">
+                <h3>✅ Phase 4: Testing & Validation</h3>
+                <p>Row counts, financial totals, application testing</p>
+            </div>
+            
+            <div class="card">
+                <h3>🚀 Phase 5: Production Go-Live</h3>
+                <p>Final migration and deployment</p>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Phase 6: Post-Migration</h3>
+                <p>Monitoring, backup, and documentation</p>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ အရေးကြီးဆုံး:</strong>
+                <ul>
+                    <li>Character encoding က utf8mb4 သာ သုံးပါ</li>
+                    <li>Financial totals တွေ အတိအကျ တူရမယ်</li>
+                    <li>Test ကောင်းကောင်းမလုပ်ဘဲ production မသွားပါနဲ့</li>
+                    <li>အရာအားလုံး backup များများ ယူပါ</li>
+                </ul>
+            </div>
+            
+            <h2>🛠️ လိုအပ်တဲ့ Tools</h2>
+            <ul>
+                <li><strong>DBeaver</strong> - Schema comparison</li>
+                <li><strong>Python 3.x</strong> - File splitting scripts</li>
+                <li><strong>MySQL Client</strong> - Database operations</li>
+                <li><strong>Excel/LibreOffice</strong> - Mapping documentation</li>
+            </ul>
+        </div>
+        
+        <div class="download-section">
+            <h2>📥 Complete Guide ကို Download လုပ်ပါ</h2>
+            <p style="margin: 20px 0;">Full markdown documentation with all scripts and examples</p>
+            <a href="Data_Migration_and_ETL_Plan.md" class="download-btn" download>
+                📄 Download Full Guide (MD)
+            </a>
+            <p style="margin-top: 20px; color: #666;">
+                <small>File size: ~100KB | Format: Markdown | Language: Myanmar</small>
+            </p>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 Mifos Migration Project | Version 2.0</p>
+            <p style="margin-top: 10px; opacity: 0.8;">
+                <small>Last Updated: October 21, 2025</small>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
